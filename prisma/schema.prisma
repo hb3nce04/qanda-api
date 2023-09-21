@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Answer {
+  id         Int       @id @default(autoincrement())
+  text       String    @db.Text
+  QuestionId Int?
+  UserId     Int?
+  createAt   DateTime  @default(now())
+  questions  Question? @relation(fields: [QuestionId], references: [id], map: "answers_ibfk_1")
+  users      User?     @relation(fields: [UserId], references: [id], map: "answers_ibfk_2")
+
+  @@index([QuestionId], map: "QuestionId")
+  @@index([UserId], map: "UserId")
+  @@map("answers")
+}
+
+model Category {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(255)
+  questions Question[]
+
+  @@map("categories")
+}
+
+model Question {
+  id         Int       @id @default(autoincrement())
+  title      String    @db.VarChar(255)
+  text       String    @db.Text
+  createdAt  DateTime  @default(now())
+  UserId     Int?
+  CategoryId Int?
+  answers    Answer[]
+  users      User?     @relation(fields: [UserId], references: [id], map: "questions_ibfk_1")
+  categories Category? @relation(fields: [CategoryId], references: [id], map: "questions_ibfk_2")
+
+  @@index([CategoryId], map: "CategoryId")
+  @@index([UserId], map: "UserId")
+  @@map("questions")
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(255)
+  password  String     @db.VarChar(255)
+  email     String     @db.VarChar(255)
+  points    Int?       @default(0)
+  banned    Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  answers   Answer[]
+  questions Question[]
+
+  @@map("users")
+}
